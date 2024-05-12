@@ -1,0 +1,282 @@
+﻿@using ProjectManagment.DAL
+@model ProjectViewModel
+
+<div class="col-md-6" id="wizard">
+    <form asp-action="SaveProject">
+        <div id="step1">
+            <h3>Step 1: Project Information</h3>
+            <input type="hidden" id="id" name="Id" value="@(Model != null ? Model.Id.ToString() : "")">
+            <div class="mb-3">
+                <label for="projectName" class="form-label">Project Name</label>
+                <input type="text" class="form-control" id="name" name="name" placeholder="Enter project name" value="@(Model != null ? Model.Name: "" )" required>
+                <div class="invalid-feedback">
+                    Please enter a project name.
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input asp-for="StartTime" type="date" class="form-control" id="startTime" required>
+                    <div class="invalid-feedback">
+                        Please provide a valid start date.
+                    </div>
+                </div>
+                <div class="col">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input asp-for="EndTime" type="date" class="form-control" id="endTime" required>
+                    <div class="invalid-feedback">
+                        Please provide a valid end date.
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="priority" class="form-label">Priority</label>
+                <select asp-for="Priority" asp-items="Html.GetEnumSelectList<Priority>()" class="form-select" id="priority" required>
+                </select>
+            </div>
+            <button id="next1" type="button" data-dismiss="modal" class="btn btn-primary">Next</button>
+        </div>
+        <div id="step2" style="display: none;">
+            <h3>Step 2: Company Selection</h3>
+            <div class="mb-3">
+                <label for="customerCompany" class="form-label">Customer Company</label>
+                <select class="form-select select2" id="clientId" name="clientId" required>
+                </select>
+                <div class="invalid-feedback">
+                    Please select a customer company.
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="executorCompany" class="form-label">Executor Company</label>
+                <select class="form-select select2" id="contractorId" name="contractorId" required>
+                </select>
+                <div class="invalid-feedback">
+                    Please select an executor company.
+                </div>
+            </div>
+            <button type="button" id="prev2" class="btn btn-primary">Back</button>
+            <button type="button" id="next2" class="btn btn-primary">Next</button>
+        </div>
+        <div id="step3" style="display: none;">
+            <h3>Step 3: Project Manager Selection</h3>
+
+            <div class="mb-3">
+                <label for="projectManager" class="form-label">Project Manager</label>
+                <select class="form-select select2" id="projectManager" name="projectManagerId" required>
+                </select>
+            </div>
+
+            <button type="button" id="prev3" class="btn btn-primary">Back</button>
+            <button type="button" id="next3" class="btn btn-primary">Next</button>
+        </div>
+        <div id="step4" style="display: none;">
+            <h3>Step 4: Employees Selection</h3>
+
+            <div class="mb-3">
+                <label for="employees" class="form-label">Employees</label>
+                <select class="form-select select2" id="employees" name="employeeIds" multiple required>
+                </select>
+            </div>
+            <button type="button" id="prev4" class="btn btn-primary">Back</button>
+            <button type="button" id="next4" class="btn btn-primary">Next</button>
+        </div>
+        <div id="step5" style="display: none;">
+            <h3>Step 5: Document Upload</h3>
+            <div class="mb-3">
+                <label for="projectDocuments" class="form-label">Project Documents</label>
+                <input type="file" class="form-control" id="projectDocuments" name="projectDocuments" multiple>
+                <div class="invalid-feedback">
+                    Please select at least one document to upload.
+                </div>
+            </div>
+            <button type="button" id="prev5" class="btn btn-primary">Back</button>
+            <button type="submit" class="btn btn-primary">Finish</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+
+        const nextButtons = document.querySelectorAll('[id^="next"]');
+        const prevButtons = document.querySelectorAll('[id^="prev"]');
+        const form = document.querySelector('form');
+
+        function validateStep(step) {
+            const inputs = $(`#${step}`).find(':input');
+            let isValid = true;
+
+            inputs.each(function () {
+                const input = $(this);
+                if (!input[0].checkValidity()) {
+                    isValid = false;
+                }
+            });
+
+            return isValid;
+        }
+
+        nextButtons.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                const currentStep = `step${index + 1}`;
+                const nextStep = `step${index + 2}`;
+
+                if (validateStep(currentStep)) {
+                    $(`#${currentStep}`).hide();
+                    $(`#${nextStep}`).show();
+                } else {
+                    $(`#${currentStep}`).addClass('was-validated');
+                }
+            });
+        });
+
+        prevButtons.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                const currentStep = `step${index + 2}`;
+                const prevStep = `step${index + 1}`;
+
+                $(`#${currentStep}`).hide();
+                $(`#${prevStep}`).show();
+            });
+        });
+
+        form.addEventListener('submit', function (event) {
+            if (!validateStep('step5')) {
+                event.preventDefault();
+                event.stopPropagation();
+                $('#step5').addClass('was-validated');
+            }
+        });
+
+        $(document).ready(function () {
+            var startDateInput = $('#startTime');
+            var endDateInput = $('#endTime');
+
+            startDateInput.change(validateDateRange);
+            endDateInput.change(validateDateRange);
+
+            function validateDateRange() {
+                var startDate = new Date(startDateInput.val());
+                var endDate = new Date(endDateInput.val());
+
+                if (endDate < startDate) {
+                    startDateInput.addClass('is-invalid');
+                    endDateInput.addClass('is-invalid');
+                    endDateInput.siblings('.invalid-feedback').text('End Date cannot be earlier than Start Date');
+                } else {
+                    startDateInput.removeClass('is-invalid');
+                    endDateInput.removeClass('is-invalid');
+                    endDateInput.siblings('.invalid-feedback').text('');
+                }
+            }
+
+            $('#clientId').select2({
+                placeholder: 'Select customer company',
+                allowClear: true,
+                ajax: {
+                    url: '/api/company/getbyname',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: $.map(data, function (item) {
+                                return {
+                                    id: item.id,
+                                    text: item.name
+                                }
+                            })
+                        };
+                    }
+                },
+                data: @Html.Raw(Model != null ? $"[{{id: '{Model.Client.Id}', text: '{Model.Client.Name}'}}]" : "[]")
+                });
+
+            $('#contractorId').select2({
+                placeholder: 'Select executor company',
+                allowClear: true,
+                ajax: {
+                    url: '/api/company/getbyname',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: $.map(data, function (item) {
+                                return {
+                                    id: item.id,
+                                    text: item.name
+                                }
+                            })
+                        };
+                    }
+                },
+                data: @Html.Raw(Model != null ? $"[{{id: '{Model.Contractor.Id}', text: '{Model.Contractor.Name}'}}]" : "[]")
+                });
+
+            $('#projectManager').select2({
+                placeholder: 'Select project manager',
+                allowClear: true,
+                ajax: {
+                    url: '/api/employee/getbyname',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: $.map(data, function (item) {
+                                return {
+                                    id: item.id,
+                                    text: `${item.firstName} ${item.lastName}`
+                                }
+                            })
+                        };
+                    }
+                },
+                data: @Html.Raw(Model != null ? $"[{{id: '{Model.ProjectManager.Id}', text: '{Model.ProjectManager.ToString()}'}}]" : "[]")
+                });
+
+            $('#employees').select2({
+                placeholder: 'Select employees',
+                allowClear: true,
+                ajax: {
+                    url: '/api/employee/getbyname',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: $.map(data, function (item) {
+                                return {
+                                    id: item.id,
+                                    text: `${item.firstName} ${item.lastName}`
+                                }
+                            })
+                        };
+                    }
+                },
+                data: @Html.Raw(Model?.Employees != null ? Json.Serialize(Model.Employees.Select(e => new { id = e.Id, text = e.ToString(), selected = true })) : "[]"),
+                multiple: true
+            });
+
+        });
+
+    </script>
+}

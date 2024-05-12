@@ -1,0 +1,64 @@
+﻿@model EmployeeViewModel
+
+
+<div class="modal fade" id="employeeModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            @if (Model.Id != Guid.Empty)
+            {
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Update Employee</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="Update" asp-controller="Employee" method="post">
+                    <div class="modal-body">
+                        <input asp-for="Id" type="hidden" id="id" name="Id" value="@Model.Id">
+                        <div class="form-group">
+                            <label for="FirstName">First Name:</label>
+                            <input asp-for="FirstName" value="@Model.FirstName" type="text" class="form-control" id="firstName" name="FirstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="LastName">Last Name:</label>
+                            <input asp-for="LastName" value="@Model.LastName" type="text" class="form-control" id="lastName" name="LastName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input asp-for="Email" value="@Model.Email" type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Create Employee</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="Create" asp-controller="Employee" method="post">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="FirstName">First Name:</label>
+                            <input asp-for="FirstName" type="text" class="form-control" id="firstName" name="FirstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="LastName">Last Name:</label>
+                            <input asp-for="LastName" type="text" class="form-control" id="lastName" name="LastName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input asp-for="Email" type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>

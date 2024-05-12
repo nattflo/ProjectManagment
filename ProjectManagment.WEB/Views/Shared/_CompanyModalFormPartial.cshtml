@@ -1,0 +1,48 @@
+﻿@model CompanyViewModel
+
+
+<div class="modal fade" id="companyModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            @if (Model.Id != Guid.Empty)
+            {
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Update Company</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="Update" asp-controller="Company" method="post">
+                    <div class="modal-body">
+                        <input asp-for="Id" value="@Model.Id" type="hidden" id="id" name="Id">
+                        <div class="form-group">
+                            <label for="name">Company Name:</label>
+                            <input asp-for="Name" type="text" class="form-control" id="name" name="Name" value="@Model.Name" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Create Company</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="Create" asp-controller="Company" method="post">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="name">Company Name:</label>
+                            <input asp-for="Name" type="text" class="form-control" id="name" name="Name" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>

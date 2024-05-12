@@ -1,0 +1,87 @@
+﻿@model List<CompanyViewModel>
+
+<h2>Companies</h2>
+
+<button onclick="openCreatingModal()" class="btn btn-primary">Add Employee</button>
+
+<table id="companyTable" class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var company in Model)
+        {
+            <tr>
+                <td>@company.Name</td>
+                <td>
+                    <button onclick="openUpdatingModal('@company.Id')" class="btn btn-primary">Edit</button>
+                    <button onclick="deleteCompany('@company.Id')" class="btn btn-danger">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div id="modalContainer"></div>
+
+@{
+    await Html.RenderPartialAsync("_ErrorModal");
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#companyTable').DataTable({
+                "columnDefs": [{
+                    "targets": -1,
+                    "orderable": false,
+                    "searchable": false
+                }]
+            });
+        });
+        function deleteCompany(id) {
+            $.ajax({
+                url: '/Company/Delete/' + id,
+                type: 'DELETE',
+                success: function (response) {
+                    location.reload();
+                },
+                error: function (xhr) {
+                    $('#errorModal .modal-body').html(xhr.responseText);
+                    $('#errorModal').modal('show');
+                }
+            });
+        };
+        function openCreatingModal() {
+            $.ajax({
+                url: '/Company/CompanyModal',
+                type: 'GET',
+                success: function (response) {
+                    $("#modalContainer").html(response);
+                    $("#companyModal").modal('show');
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        };
+        function openUpdatingModal(id) {
+            console.log(id);
+            $.ajax({
+                url: '/Company/CompanyModal',
+                type: 'GET',
+                data: { id: id },
+                success: function (response) {
+                    $("#modalContainer").html(response);
+                    $("#companyModal").modal('show');
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+    </script>
+}

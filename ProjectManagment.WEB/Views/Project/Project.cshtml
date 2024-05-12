@@ -1,0 +1,129 @@
+﻿@model List<ProjectViewModel>
+
+<h2>Projects</h2>
+
+<div class="row">
+    <div class="col-sm">
+        <a asp-controller="Project" asp-action="ProjectWizard" class="btn btn-primary">Add Project</a>
+    </div>
+    <div class="col-sm">
+        <p>Date Range Filter</p>
+        <div class="col">
+            <div class="row-sm">
+                <label for="min">Minimum date:</label>
+                <input type="date" id="min" name="min">
+            </div>
+            <div class="row-sm">
+                <label for="min">Maximum date:</label>
+                <input type="date" id="max" name="max">
+            </div>
+        </div>
+    </div>
+</div>
+<table id="projectTable" class="table">
+    <thead>
+        <tr>
+            <th class="select-filter">Priority</th>
+            <th class="select-filter">Name</th>
+            <th class="select-filter">Contractor</th>
+            <th class="select-filter">Client</th>
+            <th class="select-filter">Project Manager</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var project in Model)
+        {
+            <tr>
+                <td>@project.Priority</td>
+                <td>@project.Name</td>
+                <td>@project.Contractor.Name</td>
+                <td>@project.Client.Name</td>
+                <td>@project.ProjectManager.ToString()</td>
+                <td>@project.StartTime.ToShortDateString()</td>
+                <td>@project.EndTime.ToShortDateString()</td>
+                <td>
+                    <a asp-action="ProjectWizard" asp-controller="Project" asp-route-id="@project.Id" class="btn btn-primary">Edit</a>
+                    <button onclick="deleteProject('@project.Id')" class="btn btn-danger">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <th>Priority</th>
+            <th>Name</th>
+            <th>Contractor</th>
+            <th>Client</th>
+            <th>Project Manager</th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+    </tfoot>
+</table>
+
+@{
+    await Html.RenderPartialAsync("_ErrorModal");
+}
+
+@section Scripts {
+    <script>
+        function deleteProject(id) {
+            $.ajax({
+                url: '/Project/Delete/' + id,
+                type: 'DELETE',
+                success: function (response) {
+                    location.reload();
+                },
+                error: function (xhr) {
+                    $('#errorModal .modal-body').html(xhr.responseText);
+                    $('#errorModal').modal('show');
+                }
+            });
+        };
+
+        var minDate, maxDate;
+
+        DataTable.ext.search.push(function (settings, data, dataIndex) {
+            var startDate = moment(data[4], 'DD.MM.YYYY');
+            var endDate = moment(data[5], 'DD.MM.YYYY');
+
+            return (minDate === undefined && maxDate === undefined) ||
+                (minDate === undefined && startDate <= maxDate && endDate <= maxDate) ||
+                (minDate <= startDate && minDate <= endDate && maxDate === undefined) ||
+                (minDate <= startDate && minDate <= endDate && startDate <= maxDate && endDate <= maxDate);
+        });
+
+        var table = $('#projectTable').DataTable({
+            initComplete: function () {
+                this.api()
+                    .columns('.select-filter')
+                    .every(function (index) {
+                        var column = this;
+                        var title = column.footer().textContent;
+                        $('<input type="text" placeholder="Search"/>')
+                            .appendTo($(column.footer()).empty())
+                            .on('keyup change clear', function () {
+                                if (column.search() !== this.value) {
+                                    column.search(this.value).draw();
+                                }
+                            });
+                    });
+            }
+        });
+
+        $('#min').on('change', function () {
+            const value = $(this).val();
+            minDate = value != "" ? moment($(this).val(), 'YYYY-MM-DD') : undefined;
+            table.draw();
+        });
+        $('#max').on('change', function () {
+            const value = $(this).val();
+            maxDate = value != "" ? moment($(this).val(), 'YYYY-MM-DD') : undefined;
+            table.draw();
+        });
+    </script>
+}
